@@ -1,0 +1,101 @@
+news sources:
+  - name: The Verge
+    url: https://www.theverge.com/rss/index.xml
+    type: news
+    tags: [tech, gadgets, culture]
+
+  - name: Ars Technica
+    url: https://feeds.arstechnica.com/arstechnica/index
+    type: news
+    tags: [technology, science, IT]
+
+  - name: TechCrunch
+    url: https://techcrunch.com/feed/
+    type: news
+    tags: [startups, innovation, tech]
+
+  - name: Wired (Technology)
+    url: https://www.wired.com/feed/rss
+    type: news
+    tags: [technology, culture, science]
+
+  - name: ZDNet
+    url: https://www.zdnet.com/news/rss.xml
+    type: news
+    tags: [business, tech, IT]
+
+  - name: CNET News
+    url: https://www.cnet.com/rss/news/
+    type: news
+    tags: [gadgets, tech, reviews]
+
+  - name: Engadget
+    url: https://www.engadget.com/rss.xml
+    type: news
+    tags: [gadgets, consumer-tech, reviews]
+
+  - name: Hacker News (Front Page)
+    url: https://hnrss.org/frontpage
+    type: news
+    tags: [programming, startups, tech]
+
+  - name: VentureBeat
+    url: https://venturebeat.com/feed/
+    type: news
+    tags: [AI, business, tech]
+
+  - name: MIT Technology Review
+    url: https://www.technologyreview.com/feed/
+    type: news
+    tags: [innovation, science, tech]
+
+engineering sources:
+  - name: Netflix Tech Blog
+    url: https://netflixtechblog.com/feed
+    type: engineering
+    tags: [scalability, architecture, streaming]
+
+  - name: Meta Engineering Blog
+    url: https://engineering.fb.com/feed/
+    type: engineering
+    tags: [infrastructure, AI, web]
+
+  - name: Google Developers Blog
+    url: https://developers.googleblog.com/feeds/posts/default
+    type: engineering
+    tags: [cloud, open-source, devtools]
+
+  - name: Amazon AWS Architecture Blog
+    url: https://aws.amazon.com/blogs/architecture/feed/
+    type: engineering
+    tags: [cloud, serverless, architecture]
+
+  - name: Microsoft Engineering Blog
+    url: https://devblogs.microsoft.com/feed/
+    type: engineering
+    tags: [devtools, programming, cloud]
+
+  - name: Uber Engineering Blog
+    url: https://eng.uber.com/feed/
+    type: engineering
+    tags: [data, mobility, infrastructure]
+
+  - name: Stripe Engineering Blog
+    url: https://stripe.com/blog/feed.rss
+    type: engineering
+    tags: [payments, APIs, devtools]
+
+  - name: GitHub Engineering Blog
+    url: https://github.blog/engineering.atom
+    type: engineering
+    tags: [open-source, devtools, infrastructure]
+
+  - name: LinkedIn Engineering Blog
+    url: https://engineering.linkedin.com/blog.rss.html
+    type: engineering
+    tags: [data, AI, infrastructure]
+
+  - name: Airbnb Engineering & Data Science
+    url: https://medium.com/feed/airbnb-engineering
+    type: engineering
+    tags: [data-science, infrastructure, design]
