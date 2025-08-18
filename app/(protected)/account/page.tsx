@@ -17,7 +17,7 @@ export default function ProfilePage() {
   const [data, setData] = useState<User | null>(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [fullName, setFullName] = useState(""); // Use state for full name
+  const [fullName, setFullName] = useState("");
 
   const [email, setEmail] = useState("");
   const [interests, setInterests] = useState("");
@@ -40,7 +40,7 @@ export default function ProfilePage() {
       }
 
       const fetchedFullName = profileData?.full_name || user.user_metadata.full_name || "";
-      setFullName(fetchedFullName); // Set the full name state here
+      setFullName(fetchedFullName);
       const [first, ...rest] = fetchedFullName.split(" ");
       setFirstName(first || "");
       setLastName(rest.join(" ") || "");
@@ -53,8 +53,6 @@ export default function ProfilePage() {
 
     fetchUser();
   }, []);
-
-  // Removed the useEffect that updated fullName in real-time.
 
   const handleSave = async () => {
     if (!data) return;
@@ -83,7 +81,7 @@ export default function ProfilePage() {
             });
           if (dbError) throw dbError;
 
-          setFullName(combinedName); // Update fullName state only after a successful save
+          setFullName(combinedName);
         })(),
         {
           loading: "Updating profile...",
@@ -115,7 +113,6 @@ export default function ProfilePage() {
                 <Avatar className="w-24 h-24 ring-4 ring-primary/10">
                   <AvatarImage src={avatarUrl || "/placeholder.svg?height=96&width=96"} alt="Profile" />
                   <AvatarFallback className="text-2xl font-semibold bg-primary/10 text-primary">
-                    {/* The fallback is updated when first name or last name is updated but its fine as its not visible till the image loads*/}
                     {firstName.charAt(0) + lastName.charAt(0)}
                   </AvatarFallback>
                 </Avatar>

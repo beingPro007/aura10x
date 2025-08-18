@@ -22,6 +22,7 @@ const fetchNews = async () => {
   if (!profile?.intrests) throw new Error("No interests found for this user")
 
   const res = await axios.post("/api/dataPuller", {
+    tableName: 'engineering_blog',
     categoriesToSearch: profile.intrests,
   })
 
@@ -30,7 +31,7 @@ const fetchNews = async () => {
 }
 
 const Engineering = () => {
-  const { data, error, isLoading } = useSWR("news-feed", fetchNews, {
+  const { data, error, isLoading } = useSWR("engineering_blog", fetchNews, {
     revalidateOnFocus: false,
     dedupingInterval: 1000 * 60 * 5,
   })

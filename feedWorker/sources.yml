@@ -1,4 +1,4 @@
-news sources:
+news_sources:
   - name: The Verge
     url: https://www.theverge.com/rss/index.xml
     type: news
@@ -38,7 +38,12 @@ news sources:
     url: https://hnrss.org/frontpage
     type: news
     tags: [programming, startups, tech]
-
+  
+  - name: Hacker News (News)
+    url: https://news.ycombinator.com/rss
+    type: news
+    tags: [programming, startups, tech]
+  
   - name: VentureBeat
     url: https://venturebeat.com/feed/
     type: news
@@ -49,9 +54,50 @@ news sources:
     type: news
     tags: [innovation, science, tech]
 
-engineering sources:
+  - name: Mashable
+    url: https://mashable.com/feeds/rss/all
+    type: news
+    tags: [tech, culture, entertainment, digital-culture]
+
+  - name: TechRadar
+    url: https://www.techradar.com/rss
+    type: news
+    tags: [tech, reviews, gadgets, consumer-tech, gaming]
+  
+  - name: The New York Times (Technology)
+    url: https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml
+    type: news
+    tags: [tech, policy, business, news]
+
+  - name: OpenAI News
+    url: https://openai.com/news/rss.xml
+    type: news
+    tags: [AI, machine-learning, research, startups]
+
+  - name: Graham Cluley
+    url: https://grahamcluley.com/feed/
+    type: news
+    tags: [cybersecurity, security, privacy]
+
+  - name: Schneier on Security
+    url: https://www.schneier.com/feed/atom/
+    type: news
+    tags: [cybersecurity, security, policy, privacy]
+
+  - name: Krebs on Security
+    url: https://krebsonsecurity.com/feed/
+    type: news
+    tags: [cybersecurity, cybercrime, security]
+
+  - name: Dark Reading
+    url: https://www.darkreading.com/rss.xml
+    type: news
+    tags: [cybersecurity, information-security, vulnerabilities, breaches]
+  
+
+engineering_sources:
   - name: Netflix Tech Blog
-    url: https://netflixtechblog.com/feed
+    url: https://netflixtechblog.medium.com/feed/
     type: engineering
     tags: [scalability, architecture, streaming]
 
@@ -75,11 +121,6 @@ engineering sources:
     type: engineering
     tags: [devtools, programming, cloud]
 
-  - name: Uber Engineering Blog
-    url: https://eng.uber.com/feed/
-    type: engineering
-    tags: [data, mobility, infrastructure]
-
   - name: Stripe Engineering Blog
     url: https://stripe.com/blog/feed.rss
     type: engineering
@@ -90,12 +131,122 @@ engineering sources:
     type: engineering
     tags: [open-source, devtools, infrastructure]
 
-  - name: LinkedIn Engineering Blog
-    url: https://engineering.linkedin.com/blog.rss.html
-    type: engineering
-    tags: [data, AI, infrastructure]
-
   - name: Airbnb Engineering & Data Science
     url: https://medium.com/feed/airbnb-engineering
     type: engineering
     tags: [data-science, infrastructure, design]
+
+  - name: KDnuggets
+    url: https://www.kdnuggets.com/feed
+    type: engineering
+    tags: [data-science, AI, machine-learning, big-data, analytics]
+
+  - name: Towards Data Science (Medium)
+    url: https://towardsdatascience.com/feed
+    type: engineering
+    tags: [data-science, AI, machine-learning, programming]
+
+  - name: The BAIR Blog (UC Berkeley AI Research Lab)
+    url: https://bair.berkeley.edu/blog/feed.xml
+    type: engineering
+    tags: [AI, machine-learning, research, robotics, computer-vision, NLP]
+
+  - name: Dropbox Tech Blog
+    url: https://dropbox.tech/feed
+    type: engineering
+    tags: [cloud, infrastructure, software-engineering, storage]
+
+  - name: Slack Engineering
+    url: https://slack.engineering/feed
+    type: engineering
+    tags: [software-engineering, collaboration, infrastructure, devtools]
+    
+  - name: Pinterest Engineering
+    url: https://medium.com/feed/pinterest-engineering
+    type: engineering
+    tags: [data-science, AI, machine-learning, mobile, web, infrastructure]
+
+  - name: Spotify Engineering
+    url: https://spotify.engineering/feed
+    type: engineering
+    tags: [data-engineering, machine-learning, streaming, backend, infrastructure]
+
+  - name: Atlassian Engineering Blog
+    url: https://www.atlassian.com/blog/atlassian-engineering/feed
+    type: engineering
+    tags: [software-engineering, cloud, devtools, architecture]
+
+  - name: DoorDash Engineering Blog
+    url: https://careersatdoordash.com/engineering/feed
+    type: engineering
+    tags: [logistics, data-science, machine-learning, infrastructure, mobile, web]
+    
+  - name: Coding Horror
+    url: https://blog.codinghorror.com/feed/
+    type: engineering
+    tags: [programming, software-development, human-factors]
+
+  - name: Datadog Engineering Blog
+    url: https://www.datadoghq.com/blog/engineering/feed/
+    type: engineering
+    tags: [observability, cloud, data, infrastructure, security, open-source]
+
+  - name: Martin Fowler's Blog
+    url: https://martinfowler.com/feed.atom
+    type: engineering
+    tags: [software-architecture, agile, design-patterns, refactoring]
+
+  - name: High Scalability
+    url: https://highscalability.com/feed/
+    type: engineering
+    tags: [scalability, distributed-systems, performance, architecture]
+
+  - name: CloudFlare Blog
+    url: https://blog.cloudflare.com/rss/
+    type: engineering
+    tags: [network, security, performance, web, infrastructure, cloud]
+
+  - name: All Things Distributed (Werner Vogels)
+    url: https://www.allthingsdistributed.com/atom.xml
+    type: engineering
+    tags: [distributed-systems, cloud, architecture, scalability]
+    
+  - name: Brendan Gregg's Blog
+    url: https://www.brendangregg.com/blog/index.xml
+    type: engineering
+    tags: [performance, Linux, eBPF, observability, systems-engineering]
+
+  - name: Cloud Native Computing Foundation (CNCF) Blog
+    url: https://www.cncf.io/blog/feed/
+    type: engineering
+    tags: [cloud-native, Kubernetes, open-source, infrastructure, DevOps]
+
+  - name: Docker Blog
+    url: https://blog.docker.com/feed/
+    type: engineering
+    tags: [containers, Docker, DevOps, software-development]
+
+  - name: InfoQ (AI, ML & Data Engineering)
+    url: https://www.infoq.com/feed/ai-ml-data-eng/
+    type: engineering
+    tags: [AI, machine-learning, data-engineering, software-architecture, trends]
+    
+  - name: Amazon Science
+    url: https://www.amazon.science/index.rss
+    type: engineering
+    tags: [AI, machine-learning, research, robotics, quantum-computing]
+    
+  - name: Anaconda Blog
+    url: https://www.anaconda.com/blog/feed
+    type: engineering
+    tags: [data-science, Python, open-source, AI, machine-learning]
+    
+  - name: DeepMind Blog
+    url: https://deepmind.google/blog/feed/basic/
+    type: engineering
+    tags: [AI, machine-learning, research, deep-learning]
+    
+  - name: Microsoft Research
+    url: https://www.microsoft.com/en-us/research/feed/
+    type: engineering
+    tags: [research, AI, technology, innovation]
