@@ -104,6 +104,24 @@ export default function OnboardingPage() {
       return
     }
 
+    const userProfileText = JSON.stringify(profile)
+
+    const resp = await fetch("https://api.openai.com/v1/embeddings", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${Deno.env.get("OPENAI_API_KEY")!}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        input: userProfileText,  // from Step 1
+        model: "text-embedding-3-small"
+      }),
+    });
+
+    const data = await resp.json();
+    const userEmbedding = data.data[0].embedding;
+
+
     const { error } = await browserClient.from("profiles").upsert(
       {
         id: user.id,
@@ -198,20 +216,18 @@ export default function OnboardingPage() {
               {EXPERIENCE_LEVELS.map((level) => (
                 <div
                   key={level.value}
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    profile.experience === level.value
+                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${profile.experience === level.value
                       ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                       : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                  }`}
+                    }`}
                   onClick={() => setProfile({ ...profile, experience: level.value })}
                 >
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`w-4 h-4 rounded-full border-2 ${
-                        profile.experience === level.value
+                      className={`w-4 h-4 rounded-full border-2 ${profile.experience === level.value
                           ? "border-blue-500 bg-blue-500"
                           : "border-gray-300 dark:border-gray-600"
-                      }`}
+                        }`}
                     >
                       {profile.experience === level.value && (
                         <div className="w-full h-full rounded-full bg-white scale-50" />
@@ -238,11 +254,10 @@ export default function OnboardingPage() {
                   return (
                     <div
                       key={interest.id}
-                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                        isSelected
+                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${isSelected
                           ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                           : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                      }`}
+                        }`}
                       onClick={() => handleInterestToggle(interest.id)}
                     >
                       <div className="flex items-center space-x-3">

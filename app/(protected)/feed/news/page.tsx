@@ -6,6 +6,8 @@ import axios from "axios"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
+import useSWRInfinite from "swr/infinite"
+
 
 const fetchNews = async () => {
   const user = await getUserClient()
@@ -13,7 +15,7 @@ const fetchNews = async () => {
 
   const { data: profile, error: profileError } = await browserClient
     .from("profiles")
-    .select("intrests")
+    .select("*")
     .eq("id", user.id)
     .single()
 
@@ -21,8 +23,9 @@ const fetchNews = async () => {
   if (!profile?.intrests) throw new Error("No interests found for this user")
 
   const res = await axios.post("/api/dataPuller", {
-    tableName: 'news_blog',
+    tableName: "items",
     categoriesToSearch: profile.intrests,
+    userEmbedding: profile.embedding,
   })
 
   if (!res?.data) throw new Error("No response data received from API")

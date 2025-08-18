@@ -1,4 +1,4 @@
-news_sources:
+sources:
   - name: The Verge
     url: https://www.theverge.com/rss/index.xml
     type: news
@@ -94,8 +94,6 @@ news_sources:
     type: news
     tags: [cybersecurity, information-security, vulnerabilities, breaches]
   
-
-engineering_sources:
   - name: Netflix Tech Blog
     url: https://netflixtechblog.medium.com/feed/
     type: engineering

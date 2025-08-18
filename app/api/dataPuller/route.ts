@@ -1,8 +1,9 @@
 import { serverClient } from "@/lib/supabaseServer"
 import { NextRequest, NextResponse } from "next/server"
 
+
 const TABLE_CACHE_RULES = {
-  news_blog: { ttl: 200 },
+  items: { ttl: 200 },
   engineering_blog: { ttl: 3600 },
 }
 
@@ -10,7 +11,7 @@ const tableCache = new Map<string, { data: any; expiry: number }>()
 
 export async function POST(request: NextRequest) {
   try {
-    const { categoriesToSearch, tableName } = await request.json()
+    const { categoriesToSearch, tableName, userEmbedding } = await request.json()
 
     if (!tableName || typeof tableName !== "string") {
       return NextResponse.json(
@@ -34,11 +35,12 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await serverClient()
+
     const { data, error } = await supabase
-      .from(tableName)
-      .select()
-      .overlaps("categories", categoriesToSearch)
-      .order("published_at", { ascending: false })
+      .rpc('get_similar_items', {
+        query_embedding: userEmbedding,
+        limit_count: 20
+      });    
 
     if (error) {
       console.error(`Error fetching data from '${tableName}':`, error)
