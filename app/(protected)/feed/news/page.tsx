@@ -7,7 +7,6 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
 
-// SWR fetcher
 const fetchNews = async () => {
   const user = await getUserClient()
   if (!user) throw new Error("No user logged in")
@@ -22,6 +21,7 @@ const fetchNews = async () => {
   if (!profile?.intrests) throw new Error("No interests found for this user")
 
   const res = await axios.post("/api/dataPuller", {
+    tableName: 'news_blog',
     categoriesToSearch: profile.intrests,
   })
 
@@ -30,12 +30,11 @@ const fetchNews = async () => {
 }
 
 const News = () => {
-  const { data, error, isLoading } = useSWR("news-feed", fetchNews, {
+  const { data, error, isLoading } = useSWR("news_blog", fetchNews, {
     revalidateOnFocus: false,
-    dedupingInterval: 1000 * 60 * 5, // cache for 5 mins
+    dedupingInterval: 1000 * 60 * 5,
   })
 
-  // Loading skeleton
   if (isLoading) {
     return (
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-2 sm:p-4">
@@ -49,7 +48,6 @@ const News = () => {
     )
   }
 
-  // Error UI
   if (error) {
     return (
       <div className="p-2 sm:p-4">
@@ -62,7 +60,6 @@ const News = () => {
     )
   }
 
-  // Main content
   return (
     <div className="space-y-4 p-2 sm:p-4">
       <h1 className="text-2xl font-bold tracking-tight text-muted-foreground">Your News Feed</h1>
