@@ -68,7 +68,7 @@ serve(async (req) => {
     const { error } = await supabaseClient
       .from("profiles")
       .upsert(
-        [{ id, bio, intrests, experience, embedding: userEmbedding }],
+        [{ embedding: userEmbedding }],
         { onConflict: ["id"] }
       );
 

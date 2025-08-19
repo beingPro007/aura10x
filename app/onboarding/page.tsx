@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress"
 import { CheckCircle, Code, Database, Globe, Smartphone, Brain, Shield, ArrowRight, ArrowLeft } from "lucide-react"
 import { browserClient, getUserClient } from "@/lib/supabaseClient"
 import toast from "react-hot-toast"
+import { id } from "zod/v4/locales"
 
 interface DeveloperProfile {
   full_name: string
@@ -26,6 +27,12 @@ const INTEREST_OPTIONS = [
   { id: "mobile", label: "Mobile Development", icon: Smartphone, color: "bg-orange-500" },
   { id: "ai", label: "AI/Machine Learning", icon: Brain, color: "bg-pink-500" },
   { id: "security", label: "Cybersecurity", icon: Shield, color: "bg-red-500" },
+  { id: "devops", label: "DevOps/SRE", icon: Code, color: "bg-yellow-500" },
+  { id: "data", label: "Data Science/Analytics", icon: Database, color: "bg-teal-500" },
+  { id: "cloud", label: "Cloud Computing", icon: Globe, color: "bg-gray-500" },
+  { id: "game", label: "Game Development", icon: Code, color: "bg-indigo-500" },
+  { id: "blockchain", label: "Blockchain/Crypto", icon: Code, color: "bg-purple-300" },
+  { id: "other", label: "Other", icon: Code, color: "bg-gray-300" },
 ]
 
 const EXPERIENCE_LEVELS = [
@@ -49,34 +56,33 @@ export default function OnboardingPage() {
   const totalSteps = 4
   const progress = (currentStep / totalSteps) * 100
 
-  /** ✅ Guard: check user + profile before showing onboarding */
   useEffect(() => {
     const checkUserAndProfile = async () => {
-      const user = await getUserClient()
+      const user = await getUserClient();
       if (!user) {
-        router.replace("/auth/login")
-        return
+        router.replace("/auth/login");
+        return;
       }
 
       const { data: profileData, error } = await browserClient
         .from("profiles")
-        .select("intrests")
+        .select("onboarding_complete")
         .eq("id", user.id)
-        .single()
+        .single();
 
-      if (error) console.error("Error fetching profile:", error)
+      if (error) console.error("Error fetching profile:", error);
 
-      if (profileData?.intrests?.length > 0) {
-        router.replace("/feed/news")
-        return
+      // Check the correct flag
+      if (profileData?.onboarding_complete) { // <-- CHANGE THIS
+        router.replace("/feed/news");
+        return;
       }
 
-      setLoading(false)
-    }
+      setLoading(false);
+    };
 
-    checkUserAndProfile()
-  }, [router])
-
+    checkUserAndProfile();
+  }, [router]);
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -98,10 +104,10 @@ export default function OnboardingPage() {
   const handlePrevious = () => setCurrentStep((s) => Math.max(1, s - 1))
 
   const handleComplete = async () => {
-    const user = await getUserClient()
+    const user = await getUserClient();
     if (!user) {
-      router.replace("/auth/login")
-      return
+      router.replace("/auth/login");
+      return;
     }
 
     const { error } = await browserClient.from("profiles").upsert(
@@ -111,18 +117,19 @@ export default function OnboardingPage() {
         experience: profile.experience,
         intrests: profile.intrests,
         bio: profile.bio,
+        onboarding_complete: true,
       },
       { onConflict: "id" }
-    )
+    );
 
     if (error) {
-      console.error("Error updating profile:", error)
-      toast.error("Error saving your profile")
+      console.error("Error updating profile:", error);
+      toast.error("Error saving your profile");
     } else {
-      toast.success("Onboarding completed 🎉")
-      router.push("/feed/news")
+      toast.success("Onboarding completed 🎉");
+      router.replace("/feed/news");
     }
-  }
+  };
 
   const isStepValid = () => {
     switch (currentStep) {
@@ -198,20 +205,18 @@ export default function OnboardingPage() {
               {EXPERIENCE_LEVELS.map((level) => (
                 <div
                   key={level.value}
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    profile.experience === level.value
-                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                  }`}
+                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${profile.experience === level.value
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                    : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                    }`}
                   onClick={() => setProfile({ ...profile, experience: level.value })}
                 >
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`w-4 h-4 rounded-full border-2 ${
-                        profile.experience === level.value
-                          ? "border-blue-500 bg-blue-500"
-                          : "border-gray-300 dark:border-gray-600"
-                      }`}
+                      className={`w-4 h-4 rounded-full border-2 ${profile.experience === level.value
+                        ? "border-blue-500 bg-blue-500"
+                        : "border-gray-300 dark:border-gray-600"
+                        }`}
                     >
                       {profile.experience === level.value && (
                         <div className="w-full h-full rounded-full bg-white scale-50" />
@@ -238,11 +243,10 @@ export default function OnboardingPage() {
                   return (
                     <div
                       key={interest.id}
-                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                        isSelected
-                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                      }`}
+                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${isSelected
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                        }`}
                       onClick={() => handleInterestToggle(interest.id)}
                     >
                       <div className="flex items-center space-x-3">

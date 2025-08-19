@@ -1,8 +1,8 @@
 "use client"
 
 import { browserClient, getUserClient } from "@/lib/supabaseClient"
-import useSWRInfinite from "swr/infinite"
 import axios from "axios"
+import { useEffect, useState } from "react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
@@ -36,23 +36,40 @@ const fetchNewsPage = async (pageIndex: number) => {
 }
 
 const News = () => {
-  // ✅ Tuple key: [resourceName, pageIndex]
-  const getKey = (pageIndex: number, previousPageData: any) => {
-    if (previousPageData && previousPageData.length === 0) return null
-    return ["news", pageIndex] as [string, number]
+  const [items, setItems] = useState<any[]>([])
+  const [page, setPage] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [hasMore, setHasMore] = useState(true)
+
+  const loadPage = async (pageIndex: number) => {
+    try {
+      setLoading(true)
+      setError(null)
+      const newItems = await fetchNewsPage(pageIndex)
+
+      if (newItems.length < PAGE_SIZE) {
+        setHasMore(false)
+      }
+
+      if (pageIndex === 0) {
+        setItems(newItems) // first page replaces
+      } else {
+        setItems((prev) => [...prev, ...newItems]) // append
+      }
+    } catch (err: any) {
+      setError(err.message || "Something went wrong")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const { data, error, size, setSize, isValidating } = useSWRInfinite(
-    getKey,
-    async ([, pageIndex]: [string, number]) => fetchNewsPage(pageIndex),
-    { revalidateOnFocus: false }
-  )
+  useEffect(() => {
+    loadPage(0)
+  }, [])
 
-  // Flatten all pages into one array
-  const items = data ? ([] as any[]).concat(...data) : []
-
-  // Loading state
-  if (!data && isValidating) {
+  // Loading skeleton
+  if (loading && items.length === 0) {
     return (
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-2 sm:p-4">
         {[...Array(PAGE_SIZE)].map((_, i) => (
@@ -71,7 +88,7 @@ const News = () => {
       <div className="p-2 sm:p-4">
         <Card className="p-4">
           <CardContent className="text-destructive font-medium">
-            Error: {error.message || "Something went wrong"}
+            Error: {error}
           </CardContent>
         </Card>
       </div>
@@ -123,15 +140,21 @@ const News = () => {
           </div>
 
           {/* Load More Button */}
-          <div className="flex justify-center p-4">
-            <button
-              onClick={() => setSize(size + 1)}
-              disabled={isValidating}
-              className="px-4 py-2 bg-primary text-white rounded-lg"
-            >
-              {isValidating ? "Loading..." : "Load More"}
-            </button>
-          </div>
+          {hasMore && (
+            <div className="flex justify-center p-4">
+              <button
+                onClick={() => {
+                  const nextPage = page + 1
+                  setPage(nextPage)
+                  loadPage(nextPage)
+                }}
+                disabled={loading}
+                className="px-4 py-2 bg-primary text-white rounded-lg"
+              >
+                {loading ? "Loading..." : "Load More"}
+              </button>
+            </div>
+          )}
         </>
       ) : (
         <Card>
