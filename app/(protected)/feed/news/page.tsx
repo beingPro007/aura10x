@@ -1,19 +1,22 @@
 "use client"
 
 import { browserClient, getUserClient } from "@/lib/supabaseClient"
-import useSWR from "swr"
+import useSWRInfinite from "swr/infinite"
 import axios from "axios"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
 
-const fetchNews = async () => {
+const PAGE_SIZE = 20
+
+// Fetch one page of news
+const fetchNewsPage = async (pageIndex: number) => {
   const user = await getUserClient()
   if (!user) throw new Error("No user logged in")
 
   const { data: profile, error: profileError } = await browserClient
     .from("profiles")
-    .select("intrests")
+    .select("*")
     .eq("id", user.id)
     .single()
 
@@ -21,8 +24,11 @@ const fetchNews = async () => {
   if (!profile?.intrests) throw new Error("No interests found for this user")
 
   const res = await axios.post("/api/dataPuller", {
-    tableName: 'news_blog',
+    tableName: "items",
     categoriesToSearch: profile.intrests,
+    userEmbedding: profile.embedding,
+    page: pageIndex,
+    limit: PAGE_SIZE,
   })
 
   if (!res?.data) throw new Error("No response data received from API")
@@ -30,15 +36,26 @@ const fetchNews = async () => {
 }
 
 const News = () => {
-  const { data, error, isLoading } = useSWR("news_blog", fetchNews, {
-    revalidateOnFocus: false,
-    dedupingInterval: 1000 * 60 * 5,
-  })
+  // ✅ Tuple key: [resourceName, pageIndex]
+  const getKey = (pageIndex: number, previousPageData: any) => {
+    if (previousPageData && previousPageData.length === 0) return null
+    return ["news", pageIndex] as [string, number]
+  }
 
-  if (isLoading) {
+  const { data, error, size, setSize, isValidating } = useSWRInfinite(
+    getKey,
+    async ([, pageIndex]: [string, number]) => fetchNewsPage(pageIndex),
+    { revalidateOnFocus: false }
+  )
+
+  // Flatten all pages into one array
+  const items = data ? ([] as any[]).concat(...data) : []
+
+  // Loading state
+  if (!data && isValidating) {
     return (
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-2 sm:p-4">
-        {[...Array(8)].map((_, i) => (
+        {[...Array(PAGE_SIZE)].map((_, i) => (
           <Card key={i} className="p-4">
             <Skeleton className="h-5 w-3/4 mb-2" />
             <Skeleton className="h-4 w-full" />
@@ -48,6 +65,7 @@ const News = () => {
     )
   }
 
+  // Error state
   if (error) {
     return (
       <div className="p-2 sm:p-4">
@@ -63,44 +81,58 @@ const News = () => {
   return (
     <div className="space-y-4 p-2 sm:p-4">
       <h1 className="text-2xl font-bold tracking-tight text-muted-foreground">Your News Feed</h1>
-      {data && data.length > 0 ? (
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {data.map((item: any, index: number) => (
-            <Link
-              key={index}
-              href={item.url || item.canonical_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block"
+
+      {items.length > 0 ? (
+        <>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {items.map((item: any, index: number) => (
+              <Link
+                key={index}
+                href={item.url || item.canonical_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                <Card className="hover:shadow-lg hover:border-primary transition-all cursor-pointer h-full flex flex-col">
+                  <CardHeader>
+                    <CardTitle className="text-lg line-clamp-2">{item.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-muted-foreground line-clamp-3 flex-grow">
+                    {item.content && /<\/?[a-z][\s\S]*>/i.test(item.content)
+                      ? item.content.replace(/<[^>]*>/g, "")
+                      : item.content}
+                  </CardContent>
+                  <CardFooter className="text-sm text-muted-foreground flex justify-between">
+                    <span>
+                      {new Date(item.published_at).toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </span>
+                    <span>
+                      {new Date(item.published_at).toLocaleTimeString(undefined, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </CardFooter>
+                </Card>
+              </Link>
+            ))}
+          </div>
+
+          {/* Load More Button */}
+          <div className="flex justify-center p-4">
+            <button
+              onClick={() => setSize(size + 1)}
+              disabled={isValidating}
+              className="px-4 py-2 bg-primary text-white rounded-lg"
             >
-              <Card className="hover:shadow-lg hover:border-primary transition-all cursor-pointer h-full flex flex-col">
-                <CardHeader>
-                  <CardTitle className="text-lg line-clamp-2">{item.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="text-muted-foreground line-clamp-3 flex-grow">
-                  {item.content && /<\/?[a-z][\s\S]*>/i.test(item.content)
-                    ? item.content.replace(/<[^>]*>/g, "")
-                    : item.content}
-                </CardContent>
-                <CardFooter className="text-sm text-muted-foreground flex justify-between">
-                  <span>
-                    {new Date(item.published_at).toLocaleDateString(undefined, {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </span>
-                  <span>
-                    {new Date(item.published_at).toLocaleTimeString(undefined, {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </CardFooter>
-              </Card>
-            </Link>
-          ))}
-        </div>
+              {isValidating ? "Loading..." : "Load More"}
+            </button>
+          </div>
+        </>
       ) : (
         <Card>
           <CardContent className="py-6 text-center text-muted-foreground">

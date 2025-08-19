@@ -23,5 +23,5 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "feedWorker/worker.js"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "feedWorker", "supabase", "public", "dist", "build", "coverage", ".next", "out"]
 }
