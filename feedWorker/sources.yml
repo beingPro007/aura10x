@@ -229,11 +229,6 @@ sources:
     type: engineering
     tags: [AI, machine-learning, data-engineering, software-architecture, trends]
     
-  - name: Amazon Science
-    url: https://www.amazon.science/index.rss
-    type: engineering
-    tags: [AI, machine-learning, research, robotics, quantum-computing]
-    
   - name: Anaconda Blog
     url: https://www.anaconda.com/blog/feed
     type: engineering

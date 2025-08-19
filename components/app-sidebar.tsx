@@ -42,7 +42,7 @@ const defaultData = {
       icon: IconNews,
       children: [
         { title: "News", url: "/feed/news" },
-        { title: "Engineering", url: "/feed/engineering" },
+        // { title: "Engineering", url: "/feed/engineering" },
       ],
     },
   ],

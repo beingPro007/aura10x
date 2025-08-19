@@ -3,21 +3,16 @@ import path from "path";
 import yaml from "js-yaml";
 import RSSParser from "rss-parser";
 import crypto from "crypto";
+import fetch from "node-fetch";
 import { Pool } from "pg";
 import { config as dotenvConfig } from "dotenv";
 
 dotenvConfig({ path: path.join(process.cwd(), ".env.local") });
 
 const SOURCES_FILE = process.env.SOURCES_FILE || path.join(process.cwd(), "sources.yml");
-const DATABASE_URL = process.env.NODE_ENV == 'development' ?  process.env.DATABASE_URL : process.env.PROD_DATABASE_URL;
+const DATABASE_URL = process.env.NODE_ENV === "development" ? process.env.DATABASE_URL : process.env.PROD_DATABASE_URL;
 
-
-console.log("Using DATABASE_URL:", DATABASE_URL);
-
-if (!DATABASE_URL) {
-  console.error("Please set DATABASE_URL env var");
-  process.exit(1);
-}
+if (!DATABASE_URL) process.exit(1);
 
 const parser = new RSSParser({ customFields: { item: ["category", "categories", "link"] } });
 const pg = new Pool({ connectionString: DATABASE_URL, max: 10 });
@@ -26,7 +21,7 @@ const loadSources = () => {
   try {
     const raw = fs.readFileSync(SOURCES_FILE, "utf8");
     return yaml.load(raw).sources || [];
-  } catch (err) {
+  } catch {
     console.error("Failed to load sources.yml:", err);
     return [];
   }
@@ -101,16 +96,10 @@ async function ensureItemsTable(pool) {
       raw JSONB
     );
   `;
-  try {
-    await pool.query(createTableSQL);
-    console.log("Checked/Created 'items' table");
-  } catch (err) {
-    console.error("Failed to create 'items' table:", err.message);
-    throw err;
-  }
+  await pool.query(createTableSQL);
 }
 
-async function upsertItems(pool, items) {
+async function upsertItems(pool, items, sourceName) {
   if (!items || items.length === 0) return;
   const columns = [
     "item_id",
@@ -158,21 +147,20 @@ async function upsertItems(pool, items) {
       categories = EXCLUDED.categories,
       raw = EXCLUDED.raw;
   `;
-  try {
-    await pool.query(query, values);
-    console.log(`Upserted ${items.length} items`);
-  } catch (err) {
-    console.error("Upsert failed:", err.message);
-  }
+  await pool.query(query, values);
+  console.log(`[${new Date().toISOString()}] Upserted ${items.length} items from ${sourceName}`);
+}
+
+async function fetchAndParseFeed(url) {
+  const res = await fetch(url);
+  let xml = await res.text();
+  xml = xml.replace(/&(?![a-zA-Z0-9#]+;)/g, "&amp;");
+  return parser.parseString(xml);
 }
 
 async function fetchAndUpsertAll() {
   const sources = loadSources();
-  if (!sources.length) {
-    console.warn("No sources found");
-    return;
-  }
-  console.log(`Loaded ${sources.length} sources from ${SOURCES_FILE}`);
+  if (!sources.length) return;
 
   await ensureItemsTable(pg);
 
@@ -181,8 +169,6 @@ async function fetchAndUpsertAll() {
   try {
     const res = await client.query("SELECT item_id FROM items");
     res.rows.forEach(r => existingIds.add(r.item_id));
-  } catch (err) {
-    console.warn("Could not preload existing IDs:", err.message);
   } finally {
     client.release();
   }
@@ -192,7 +178,7 @@ async function fetchAndUpsertAll() {
     for (const feedUrl of urls) {
       console.log(`[${new Date().toISOString()}] Fetching ${source.name} -> ${feedUrl}`);
       try {
-        const feed = await parser.parseURL(feedUrl);
+        const feed = await fetchAndParseFeed(feedUrl);
         const itemsToInsert = [];
 
         for (const rawItem of feed.items || []) {
@@ -208,7 +194,9 @@ async function fetchAndUpsertAll() {
           );
 
           const pubDateObj = published ? new Date(published) : null;
-          if (existingIds.has(itemIdFrom(canonical || linkVal, rawItem.title, published, source.id || source.name))) continue;
+          const item_id = itemIdFrom(canonical || linkVal, rawItem.title, published, source.id || source.name);
+
+          if (existingIds.has(item_id)) continue;
           if (pubDateObj && (Date.now() - pubDateObj.getTime()) > (30 * 24 * 60 * 60 * 1000)) continue;
 
           const categories = normalizeCategories(rawItem.categories || rawItem.category || [], source.tags || []);
@@ -217,8 +205,6 @@ async function fetchAndUpsertAll() {
             : JSON.stringify(rawItem.title);
           const summary = (rawItem.contentSnippet || rawItem.summary || "").substring(0, 2000);
           const content = rawItem.content || rawItem["content:encoded"] || "";
-
-          const item_id = itemIdFrom(canonical || linkVal, titleVal, published, source.id || source.name);
 
           itemsToInsert.push({
             item_id,
@@ -238,14 +224,11 @@ async function fetchAndUpsertAll() {
         }
 
         if (itemsToInsert.length > 0) {
-          await upsertItems(pg, itemsToInsert);
+          await upsertItems(pg, itemsToInsert, source.name);
         }
-      } catch (err) {
-        console.error(`Failed to fetch/parse feed ${feedUrl}:`, err.message);
-      }
+      } catch {}
     }
   }
-  console.log("Done fetching all sources");
 }
 
 export default fetchAndUpsertAll;
