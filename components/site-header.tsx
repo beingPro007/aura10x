@@ -1,5 +1,5 @@
-import { SidebarTrigger } from "@/components/ui/sidebar"
-import { ThemeToggler } from "./theme-toggler"
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ThemeToggler } from "./theme-toggler";
 
 export function SiteHeader() {
   return (
@@ -14,5 +14,5 @@ export function SiteHeader() {
         </div>
       </div>
     </header>
-  )
+  );
 }

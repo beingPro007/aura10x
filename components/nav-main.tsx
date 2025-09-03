@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import React from "react"
-import Link from "next/link"
-import { IconChevronDown, type Icon } from "@tabler/icons-react"
-import { motion, AnimatePresence } from "framer-motion"
+import React from "react";
+import Link from "next/link";
+import { IconChevronDown, type Icon } from "@tabler/icons-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   SidebarGroup,
@@ -14,21 +14,21 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 type NavItem = {
-  title: string
-  url: string
-  icon?: Icon
-  children?: NavItem[]
-}
+  title: string;
+  url: string;
+  icon?: Icon;
+  children?: NavItem[];
+};
 
 export function NavMain({ items }: { items: NavItem[] }) {
-  const [openItem, setOpenItem] = React.useState<string | null>(null)
+  const [openItem, setOpenItem] = React.useState<string | null>(null);
 
   const toggleOpen = (title: string) => {
-    setOpenItem(openItem === title ? null : title)
-  }
+    setOpenItem(openItem === title ? null : title);
+  };
 
   return (
     <SidebarGroup>
@@ -91,5 +91,5 @@ export function NavMain({ items }: { items: NavItem[] }) {
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }

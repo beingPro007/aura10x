@@ -9,12 +9,18 @@ import { config as dotenvConfig } from "dotenv";
 
 dotenvConfig({ path: path.join(process.cwd(), ".env.local") });
 
-const SOURCES_FILE = process.env.SOURCES_FILE || path.join(process.cwd(), "sources.yml");
-const DATABASE_URL = process.env.NODE_ENV === "development" ? process.env.DATABASE_URL : process.env.PROD_DATABASE_URL;
+const SOURCES_FILE =
+  process.env.SOURCES_FILE || path.join(process.cwd(), "sources.yml");
+const DATABASE_URL =
+  process.env.NODE_ENV === "development"
+    ? process.env.DATABASE_URL
+    : process.env.PROD_DATABASE_URL;
 
 if (!DATABASE_URL) process.exit(1);
 
-const parser = new RSSParser({ customFields: { item: ["category", "categories", "link"] } });
+const parser = new RSSParser({
+  customFields: { item: ["category", "categories", "link"] },
+});
 const pg = new Pool({ connectionString: DATABASE_URL, max: 10 });
 
 const loadSources = () => {
@@ -36,14 +42,18 @@ const normalizeDate = (dateStr) => {
 const normalizeCategories = (itemCats, sourceTags) => {
   const cats = [];
   if (Array.isArray(itemCats)) {
-    itemCats.forEach(c => {
-      const s = String(c || "").toLowerCase().trim();
+    itemCats.forEach((c) => {
+      const s = String(c || "")
+        .toLowerCase()
+        .trim();
       if (s && !cats.includes(s)) cats.push(s);
     });
   }
   if (cats.length === 0 && Array.isArray(sourceTags)) {
-    sourceTags.forEach(c => {
-      const s = String(c || "").toLowerCase().trim();
+    sourceTags.forEach((c) => {
+      const s = String(c || "")
+        .toLowerCase()
+        .trim();
       if (s && !cats.includes(s)) cats.push(s);
     });
   }
@@ -52,7 +62,7 @@ const normalizeCategories = (itemCats, sourceTags) => {
 
 const formatArrayForPostgres = (arr) => {
   if (!arr || arr.length === 0) return "{}";
-  return `{${arr.map(v => `"${v.replace(/"/g, '\\"')}"`).join(",")}}`;
+  return `{${arr.map((v) => `"${v.replace(/"/g, '\\"')}"`).join(",")}}`;
 };
 
 const normalizeUrl = (url) => {
@@ -60,7 +70,7 @@ const normalizeUrl = (url) => {
   try {
     const u = new URL(url);
     const qp = new URLSearchParams(u.search);
-    [...qp.keys()].forEach(key => {
+    [...qp.keys()].forEach((key) => {
       if (key.toLowerCase().startsWith("utm_")) qp.delete(key);
     });
     u.search = new URLSearchParams([...qp.entries()].sort()).toString();
@@ -112,7 +122,7 @@ async function upsertItems(pool, items, sourceName) {
     "source_id",
     "source_name",
     "categories",
-    "raw"
+    "raw",
   ];
   const values = [];
   const placeholders = items.map((item, i) => {
@@ -128,7 +138,7 @@ async function upsertItems(pool, items, sourceName) {
       item.source_id,
       item.source_name,
       item.categories,
-      item.raw
+      item.raw,
     );
     return `(${columns.map((_, j) => `$${base + j + 1}`).join(", ")})`;
   });
@@ -148,7 +158,9 @@ async function upsertItems(pool, items, sourceName) {
       raw = EXCLUDED.raw;
   `;
   await pool.query(query, values);
-  console.log(`[${new Date().toISOString()}] Upserted ${items.length} items from ${sourceName}`);
+  console.log(
+    `[${new Date().toISOString()}] Upserted ${items.length} items from ${sourceName}`,
+  );
 }
 
 async function fetchAndParseFeed(url) {
@@ -168,7 +180,7 @@ async function fetchAndUpsertAll() {
   let existingIds = new Set();
   try {
     const res = await client.query("SELECT item_id FROM items");
-    res.rows.forEach(r => existingIds.add(r.item_id));
+    res.rows.forEach((r) => existingIds.add(r.item_id));
   } finally {
     client.release();
   }
@@ -176,7 +188,9 @@ async function fetchAndUpsertAll() {
   for (const source of sources) {
     const urls = Array.isArray(source.url) ? source.url : [source.url];
     for (const feedUrl of urls) {
-      console.log(`[${new Date().toISOString()}] Fetching ${source.name} -> ${feedUrl}`);
+      console.log(
+        `[${new Date().toISOString()}] Fetching ${source.name} -> ${feedUrl}`,
+      );
       try {
         const feed = await fetchAndParseFeed(feedUrl);
         const itemsToInsert = [];
@@ -185,25 +199,46 @@ async function fetchAndUpsertAll() {
           let linkVal = "";
           if (typeof rawItem.link === "string") linkVal = rawItem.link;
           else if (rawItem.link?.href) linkVal = rawItem.link.href;
-          else if (Array.isArray(rawItem.link) && rawItem.link[0]?.href) linkVal = rawItem.link[0].href;
+          else if (Array.isArray(rawItem.link) && rawItem.link[0]?.href)
+            linkVal = rawItem.link[0].href;
           else linkVal = rawItem.guid || "";
 
           const canonical = normalizeUrl(linkVal);
           const published = normalizeDate(
-            rawItem.isoDate || rawItem.pubDate || rawItem.published || rawItem.updated
+            rawItem.isoDate ||
+              rawItem.pubDate ||
+              rawItem.published ||
+              rawItem.updated,
           );
 
           const pubDateObj = published ? new Date(published) : null;
-          const item_id = itemIdFrom(canonical || linkVal, rawItem.title, published, source.id || source.name);
+          const item_id = itemIdFrom(
+            canonical || linkVal,
+            rawItem.title,
+            published,
+            source.id || source.name,
+          );
 
           if (existingIds.has(item_id)) continue;
-          if (pubDateObj && (Date.now() - pubDateObj.getTime()) > (30 * 24 * 60 * 60 * 1000)) continue;
+          if (
+            pubDateObj &&
+            Date.now() - pubDateObj.getTime() > 30 * 24 * 60 * 60 * 1000
+          )
+            continue;
 
-          const categories = normalizeCategories(rawItem.categories || rawItem.category || [], source.tags || []);
-          const titleVal = typeof rawItem.title === "string"
-            ? rawItem.title.trim()
-            : JSON.stringify(rawItem.title);
-          const summary = (rawItem.contentSnippet || rawItem.summary || "").substring(0, 2000);
+          const categories = normalizeCategories(
+            rawItem.categories || rawItem.category || [],
+            source.tags || [],
+          );
+          const titleVal =
+            typeof rawItem.title === "string"
+              ? rawItem.title.trim()
+              : JSON.stringify(rawItem.title);
+          const summary = (
+            rawItem.contentSnippet ||
+            rawItem.summary ||
+            ""
+          ).substring(0, 2000);
           const content = rawItem.content || rawItem["content:encoded"] || "";
 
           itemsToInsert.push({
@@ -217,7 +252,7 @@ async function fetchAndUpsertAll() {
             source_id: source.id || source.name,
             source_name: source.name,
             categories: formatArrayForPostgres(categories),
-            raw: rawItem
+            raw: rawItem,
           });
 
           existingIds.add(item_id);

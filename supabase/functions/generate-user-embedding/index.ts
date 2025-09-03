@@ -10,12 +10,13 @@ const supabaseClient = createClient(
         Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!}`,
       },
     },
-  }
+  },
 );
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
@@ -29,7 +30,10 @@ serve(async (req) => {
     if (!record?.id) {
       return new Response(
         JSON.stringify({ error: 'Missing "id" in request body' }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -48,7 +52,7 @@ serve(async (req) => {
     const resp = await fetch("https://api.openai.com/v1/embeddings", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${Deno.env.get("OPENAI_API_KEY")!}`,
+        Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")!}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -67,10 +71,7 @@ serve(async (req) => {
 
     const { error } = await supabaseClient
       .from("profiles")
-      .upsert(
-        [{ id, bio, intrests, experience, embedding: userEmbedding }],
-        { onConflict: ["id"] }
-      );
+      .upsert([{ embedding: userEmbedding }], { onConflict: ["id"] });
 
     if (error) throw error;
 
@@ -78,14 +79,16 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ message: "User embedding created successfully" }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
-
   } catch (err: any) {
     console.error("Error:", err);
-    return new Response(
-      JSON.stringify({ error: err.message ?? String(err) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: err.message ?? String(err) }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

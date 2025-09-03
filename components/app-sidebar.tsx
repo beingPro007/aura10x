@@ -27,6 +27,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { getUser } from "@/lib/supabaseServer";
+import Link from "next/link";
 
 const defaultData = {
   user: {
@@ -40,10 +41,7 @@ const defaultData = {
       title: "Feed",
       url: "/feed",
       icon: IconNews,
-      children: [
-        { title: "News", url: "/feed/news" },
-        // { title: "Engineering", url: "/feed/engineering" },
-      ],
+      children: [{ title: "News", url: "/feed/news" }],
     },
   ],
   navSecondary: [
@@ -58,11 +56,11 @@ const defaultData = {
   ],
 };
 
-
 type SidebarData = typeof defaultData;
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [sidebarData, setSidebarData] = React.useState<SidebarData>(defaultData);
+  const [sidebarData, setSidebarData] =
+    React.useState<SidebarData>(defaultData);
 
   React.useEffect(() => {
     const fetchUser = async () => {
@@ -94,10 +92,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href='/'>
+              <Link href={"/"}>
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold" >Dev Mate</span>
-              </a>
+                <span className="text-base font-semibold">Dev Mate</span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

@@ -1,4 +1,5 @@
-// app/(protected)/layout.tsx
+// /app/(protected)/layout.tsx
+
 import React, { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { serverClient } from "@/lib/supabaseServer";
@@ -13,29 +14,29 @@ interface ProtectedLayoutProps {
 
 const ProtectedLayout = async ({ children }: ProtectedLayoutProps) => {
   const supabase = await serverClient();
+
   const {
     data: { user },
-    error,
   } = await supabase.auth.getUser();
-
-  if (error || !user) {
+  if (!user) {
     redirect("/auth/login");
   }
 
-  // ✅ Check onboarding progress
-  const { data: profiles } = await supabase
+  // Now we only need to check the reliable status flag.
+  const { data: profile } = await supabase
     .from("profiles")
-    .select("intrests")
+    .select("onboarding_complete") // <-- SELECT THE NEW COLUMN
     .eq("id", user.id)
     .single();
 
-  console.log("Profiles: ", profiles)
-  
-  // If intrests not filled, redirect to onboarding
-  if (!profiles?.intrests || profiles.intrests.length === 0) {
+  console.log("profile", profile);
+
+  if (!profile || !profile.onboarding_complete) {
+    // <-- CHECK THE NEW COLUMN
     redirect("/onboarding");
   }
 
+  // Render protected layout
   return (
     <SidebarProvider
       style={
