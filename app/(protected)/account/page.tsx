@@ -2,12 +2,17 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Mail, Bell, HelpCircle } from "lucide-react";
+import { Edit, Mail } from "lucide-react";
 import { browserClient, getUserClient } from "@/lib/supabaseClient";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
@@ -69,7 +74,9 @@ export default function ProfilePage() {
     }
 
     if (!intrests.trim()) {
-      toast.error("Interests cannot be empty. Please add at least one interest.");
+      toast.error(
+        "Interests cannot be empty. Please add at least one interest.",
+      );
       return;
     }
 
@@ -79,23 +86,27 @@ export default function ProfilePage() {
       .filter(Boolean);
 
     if (cleanInterestsArray.length === 0) {
-      toast.error("Interests cannot be empty. Please add at least one valid interest.");
+      toast.error(
+        "Interests cannot be empty. Please add at least one valid interest.",
+      );
       return;
     }
 
     try {
       await toast.promise(
         (async () => {
-          const { error: dbError } = await browserClient.from("profiles").upsert(
-            {
-              id: data.id,
-              full_name: combinedName,
-              intrests: cleanInterestsArray,
-              updated_at: new Date().toISOString(),
-              onboarding_complete: true,
-            },
-            { onConflict: "id" }
-          );
+          const { error: dbError } = await browserClient
+            .from("profiles")
+            .upsert(
+              {
+                id: data.id,
+                full_name: combinedName,
+                intrests: cleanInterestsArray,
+                updated_at: new Date().toISOString(),
+                onboarding_complete: true,
+              },
+              { onConflict: "id" },
+            );
 
           if (dbError) throw dbError;
 
@@ -106,7 +117,7 @@ export default function ProfilePage() {
           loading: "Updating profile...",
           success: "Profile updated successfully 🎉",
           error: "Error updating profile",
-        }
+        },
       );
     } catch (error) {
       console.error(error);
@@ -114,13 +125,14 @@ export default function ProfilePage() {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Your Profile</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            Your Profile
+          </h1>
           <p className="text-muted-foreground text-lg">
             Manage your account settings and personal information.
           </p>
@@ -132,14 +144,19 @@ export default function ProfilePage() {
             <CardHeader className="text-center pb-4">
               <div className="flex justify-center mb-4">
                 <Avatar className="w-24 h-24 ring-4 ring-primary/10">
-                  <AvatarImage src={avatarUrl || "/placeholder.svg?height=96&width=96"} alt="Profile" />
+                  <AvatarImage
+                    src={avatarUrl || "/placeholder.svg?height=96&width=96"}
+                    alt="Profile"
+                  />
                   <AvatarFallback className="text-2xl font-semibold bg-primary/10 text-primary">
                     {firstName.charAt(0) + lastName.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
               </div>
               <CardTitle className="text-2xl">{fullName}</CardTitle>
-              <CardDescription className="text-base">Premium Member</CardDescription>
+              <CardDescription className="text-base">
+                Premium Member
+              </CardDescription>
               <Badge variant="secondary" className="w-fit mx-auto mt-2">
                 Verified Account
               </Badge>

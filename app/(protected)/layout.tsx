@@ -15,7 +15,9 @@ interface ProtectedLayoutProps {
 const ProtectedLayout = async ({ children }: ProtectedLayoutProps) => {
   const supabase = await serverClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
     redirect("/auth/login");
   }
@@ -28,8 +30,9 @@ const ProtectedLayout = async ({ children }: ProtectedLayoutProps) => {
     .single();
 
   console.log("profile", profile);
-  
-  if (!profile || !profile.onboarding_complete) { // <-- CHECK THE NEW COLUMN
+
+  if (!profile || !profile.onboarding_complete) {
+    // <-- CHECK THE NEW COLUMN
     redirect("/onboarding");
   }
 

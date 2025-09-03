@@ -3,13 +3,15 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 function stripHtml(input: string): string {
   try {
-    return input.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    return input
+      .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
       .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, "")
       .replace(/<[^>]+>/g, " ")
       .replace(/\s+/g, " ")
@@ -47,15 +49,23 @@ serve(async (req) => {
 
     if (!record || (type !== "INSERT" && type !== "UPDATE")) {
       return new Response(
-        JSON.stringify({ message: "Ignored: not an INSERT/UPDATE with record." }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({
+          message: "Ignored: not an INSERT/UPDATE with record.",
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
     if (table && table !== "items") {
       return new Response(
         JSON.stringify({ message: `Ignored: table ${table}` }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -63,18 +73,36 @@ serve(async (req) => {
     const title: string | undefined = record.title;
 
     if (!itemId || !title) {
-      console.log("Invalid payload (missing item_id/title):", JSON.stringify(body, null, 2));
+      console.log(
+        "Invalid payload (missing item_id/title):",
+        JSON.stringify(body, null, 2),
+      );
       return new Response(
-        JSON.stringify({ error: 'Invalid request: "record.item_id" and "record.title" are required.' }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({
+          error:
+            'Invalid request: "record.item_id" and "record.title" are required.',
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
-    if (record.embedding && Array.isArray(record.embedding) && record.embedding.length > 0) {
+    if (
+      record.embedding &&
+      Array.isArray(record.embedding) &&
+      record.embedding.length > 0
+    ) {
       console.log(`Skip: embedding already present for item ${itemId}`);
       return new Response(
-        JSON.stringify({ message: `Embedding already exists for item ${itemId}` }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({
+          message: `Embedding already exists for item ${itemId}`,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -92,7 +120,7 @@ serve(async (req) => {
     const resp = await fetch("https://api.openai.com/v1/embeddings", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -104,7 +132,9 @@ serve(async (req) => {
     const data = await resp.json();
     if (!resp.ok) {
       console.error("OpenAI error:", data);
-      throw new Error(data?.error?.message || "OpenAI embeddings request failed");
+      throw new Error(
+        data?.error?.message || "OpenAI embeddings request failed",
+      );
     }
 
     const embedding: number[] = data.data?.[0]?.embedding;
@@ -112,7 +142,9 @@ serve(async (req) => {
       throw new Error("Invalid embedding response from OpenAI");
     }
 
-    console.log(`Got embedding of length ${embedding.length}. Storing to DB...`);
+    console.log(
+      `Got embedding of length ${embedding.length}. Storing to DB...`,
+    );
 
     const { error } = await supabase
       .from("items")
@@ -126,14 +158,23 @@ serve(async (req) => {
 
     console.log(`Success: stored embedding for item ${itemId}`);
     return new Response(
-      JSON.stringify({ message: `Embedding created for item ${itemId}`, dims: embedding.length }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      JSON.stringify({
+        message: `Embedding created for item ${itemId}`,
+        dims: embedding.length,
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   } catch (err: any) {
     console.error("Handler error:", err);
     return new Response(
       JSON.stringify({ error: err?.message ?? String(err) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });

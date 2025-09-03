@@ -1,6 +1,6 @@
-import { LoginForm } from '@/components/login-form'
-import { getUser } from '@/lib/supabaseServer';
-import { redirect } from 'next/navigation';
+import { LoginForm } from "@/components/login-form";
+import { getUser } from "@/lib/supabaseServer";
+import { redirect } from "next/navigation";
 
 export default async function Page() {
   const user = await getUser();
@@ -15,5 +15,5 @@ export default async function Page() {
         <LoginForm />
       </div>
     </div>
-  )
+  );
 }
